@@ -16,7 +16,7 @@ interface BlogPost {
   slug: string
   title: string
   excerpt: string
-  content: string
+  content?: string
   date: string
   readTime: string
   category: string
@@ -82,7 +82,7 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
       setValue('slug', blog.slug)
       setValue('title', blog.title)
       setValue('excerpt', blog.excerpt)
-      setValue('content', blog.content)
+      setValue('content', blog.content || '')
       setContent(blog.content || '')
       setValue('date', blog.date.split('T')[0])
       setValue('readTime', blog.readTime)

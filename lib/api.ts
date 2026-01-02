@@ -1,6 +1,33 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// API URL configuration
+// Local development: always use localhost:5000
+// Production: use environment variable (required)
+const getAPIURL = () => {
+  // Check if we're in local development FIRST
+  const isNodeDevelopment = process.env.NODE_ENV === 'development';
+  const isClientLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  
+  // In local development, ALWAYS use localhost backend
+  if (isNodeDevelopment || isClientLocalhost) {
+    return 'http://localhost:5000/api';
+  }
+  
+  // In production, use environment variable (required)
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  if (!apiUrl) {
+    const errorMsg = 'NEXT_PUBLIC_API_URL environment variable is not set in production.';
+    console.error('❌', errorMsg);
+    console.error('⚠️ Please set NEXT_PUBLIC_API_URL in Vercel environment variables.');
+    return ''; // Return empty string to make errors obvious
+  }
+  
+  return apiUrl;
+};
+
+const API_URL = getAPIURL();
 
 // Create axios instance
 const api = axios.create({
