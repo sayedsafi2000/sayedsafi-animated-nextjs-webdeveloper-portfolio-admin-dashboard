@@ -9,6 +9,8 @@ import toast from 'react-hot-toast'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', color: '#2563eb' },
+  { name: 'Analytics', href: '/dashboard/analytics', color: '#059669' },
+  { name: 'Leads', href: '/dashboard/leads', color: '#ea580c' },
   { name: 'Blog Posts', href: '/dashboard/blog', color: '#9333ea' },
   { name: 'Projects', href: '/dashboard/projects', color: '#dc2626' },
   { name: 'Services', href: '/dashboard/services', color: '#ea580c' },

@@ -177,5 +177,73 @@ export const uploadAPI = {
   },
 };
 
+// Analytics API
+export const analyticsAPI = {
+  getOverview: async (params?: { startDate?: string; endDate?: string }) => {
+    const response = await api.get('/analytics/overview', { params });
+    return response.data;
+  },
+  getTraffic: async (params?: { period?: 'daily' | 'monthly'; startDate?: string; endDate?: string }) => {
+    const response = await api.get('/analytics/traffic', { params });
+    return response.data;
+  },
+  getCountries: async (params?: { limit?: number; startDate?: string; endDate?: string }) => {
+    const response = await api.get('/analytics/countries', { params });
+    return response.data;
+  },
+  getPages: async (params?: { limit?: number; startDate?: string; endDate?: string }) => {
+    const response = await api.get('/analytics/pages', { params });
+    return response.data;
+  },
+  getEvents: async (params?: { limit?: number; startDate?: string; endDate?: string }) => {
+    const response = await api.get('/analytics/events', { params });
+    return response.data;
+  },
+  getRecentVisits: async (params?: { limit?: number }) => {
+    const response = await api.get('/analytics/recent-visits', { params });
+    return response.data;
+  },
+  exportVisits: async (params?: { startDate?: string; endDate?: string }) => {
+    const response = await api.get('/analytics/export/visits', { 
+      params,
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+  exportLeads: async () => {
+    const response = await api.get('/analytics/export/leads', {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+};
+
+// Leads API
+export const leadsAPI = {
+  getAll: async (params?: { 
+    page?: number; 
+    limit?: number; 
+    status?: string; 
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) => {
+    const response = await api.get('/leads', { params });
+    return response.data;
+  },
+  getById: async (id: string) => {
+    const response = await api.get(`/leads/${id}`);
+    return response.data;
+  },
+  update: async (id: string, data: { status?: string; notes?: string }) => {
+    const response = await api.put(`/leads/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: string) => {
+    const response = await api.delete(`/leads/${id}`);
+    return response.data;
+  },
+};
+
 export default api;
 
