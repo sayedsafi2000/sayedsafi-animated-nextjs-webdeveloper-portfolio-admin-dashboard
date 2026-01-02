@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form'
 import { motion } from 'framer-motion'
 import { authAPI } from '@/lib/api'
 import toast from 'react-hot-toast'
-import { LogIn, Mail, Lock, User } from 'lucide-react'
 
 interface LoginForm {
   email: string
@@ -48,54 +47,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 px-4 relative overflow-hidden">
-      {/* Floating background elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <motion.div
-          className="absolute top-20 right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, -50, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 left-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -50, 0],
-            y: [0, 50, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-md w-full space-y-8 relative z-10"
+        transition={{ duration: 0.3 }}
+        className="max-w-md w-full space-y-8"
       >
         <div className="text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', delay: 0.2 }}
-            className="inline-block mb-4"
-          >
-            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg mx-auto">
-              <span className="text-white text-2xl font-bold">SS</span>
-            </div>
-          </motion.div>
+          <div className="w-16 h-16 bg-blue-600 flex items-center justify-center mx-auto mb-4">
+            <span className="text-white text-2xl font-bold">SS</span>
+          </div>
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
             {isRegister ? 'Create Account' : 'Admin Login'}
           </h2>
@@ -107,8 +69,8 @@ export default function LoginPage() {
         <motion.form
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-8 space-y-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50"
+          transition={{ delay: 0.1 }}
+          className="mt-8 space-y-6 bg-white dark:bg-gray-800 p-8 border border-gray-300 dark:border-gray-700 shadow-lg"
           onSubmit={handleSubmit(onSubmit)}
         >
           {isRegister && (
@@ -120,15 +82,12 @@ export default function LoginPage() {
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Username
               </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  {...register('username', { required: 'Username is required', minLength: { value: 3, message: 'Username must be at least 3 characters' } })}
-                  type="text"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
-                  placeholder="Enter username"
-                />
-              </div>
+              <input
+                {...register('username', { required: 'Username is required', minLength: { value: 3, message: 'Username must be at least 3 characters' } })}
+                type="text"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
+                placeholder="Enter username"
+              />
               {errors.username && (
                 <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
               )}
@@ -139,21 +98,18 @@ export default function LoginPage() {
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Email
             </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^\S+@\S+\.\S+$/,
-                    message: 'Please enter a valid email'
-                  }
-                })}
-                type="email"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
-                placeholder="Enter your email"
-              />
-            </div>
+            <input
+              {...register('email', { 
+                required: 'Email is required',
+                pattern: {
+                  value: /^\S+@\S+\.\S+$/,
+                  message: 'Please enter a valid email'
+                }
+              })}
+              type="email"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
+              placeholder="Enter your email"
+            />
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
             )}
@@ -163,18 +119,15 @@ export default function LoginPage() {
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Password
             </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                {...register('password', { 
-                  required: 'Password is required',
-                  minLength: { value: 6, message: 'Password must be at least 6 characters' }
-                })}
-                type="password"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
-                placeholder="Enter your password"
-              />
-            </div>
+            <input
+              {...register('password', { 
+                required: 'Password is required',
+                minLength: { value: 6, message: 'Password must be at least 6 characters' }
+              })}
+              type="password"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
+              placeholder="Enter your password"
+            />
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
             )}
@@ -183,17 +136,16 @@ export default function LoginPage() {
           <motion.button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full py-3 px-4 text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
             whileHover={{ scale: loading ? 1 : 1.02 }}
             whileTap={{ scale: loading ? 1 : 0.98 }}
           >
             {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="flex items-center justify-center">
+                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent"></div>
+              </div>
             ) : (
-              <>
-                <LogIn size={18} />
-                {isRegister ? 'Register' : 'Sign In'}
-              </>
+              <span>{isRegister ? 'Register' : 'Sign In'}</span>
             )}
           </motion.button>
 

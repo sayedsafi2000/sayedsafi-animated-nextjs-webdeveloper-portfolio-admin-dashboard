@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { projectsAPI } from '@/lib/api'
 import toast from 'react-hot-toast'
-import { X } from 'lucide-react'
 import ImageUpload from './ImageUpload'
 
 interface Project {
@@ -101,16 +100,16 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-300 dark:border-gray-700">
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             {project ? 'Edit Project' : 'Create New Project'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            className="px-3 py-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium"
           >
-            <X size={24} />
+            Close
           </button>
         </div>
 
@@ -151,7 +150,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
               <input
                 {...register('category', { required: 'Category is required' })}
                 type="text"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               {errors.category && (
                 <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
@@ -165,7 +164,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
               <input
                 {...register('order', { valueAsNumber: true })}
                 type="number"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
           </div>
@@ -191,7 +190,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
               <input
                 {...register('link')}
                 type="url"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
 
@@ -202,7 +201,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
               <input
                 {...register('github')}
                 type="url"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
           </div>
@@ -228,7 +227,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 {...register('featured')}
                 type="checkbox"
                 id="featured"
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
               <label htmlFor="featured" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                 Featured
@@ -240,7 +239,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 {...register('isCustomCode')}
                 type="checkbox"
                 id="isCustomCode"
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
               />
               <label htmlFor="isCustomCode" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                 Custom Code (not WordPress)
@@ -252,14 +251,14 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? 'Saving...' : project ? 'Update' : 'Create'}
             </button>

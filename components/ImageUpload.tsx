@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Upload, X, Image as ImageIcon } from 'lucide-react'
 import { uploadAPI } from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -77,20 +76,20 @@ export default function ImageUpload({ value, onChange, folder }: ImageUploadProp
           <img
             src={preview}
             alt="Preview"
-            className="w-full h-48 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+            className="w-full h-48 object-cover border border-gray-300 dark:border-gray-600"
           />
           <button
             type="button"
             onClick={handleRemove}
-            className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+            className="absolute top-2 right-2 px-3 py-1 bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 text-sm font-medium"
           >
-            <X size={16} />
+            Remove
           </button>
         </div>
       ) : (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+          className="border-2 border-dashed border-gray-300 dark:border-gray-600 p-8 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
         >
           <input
             ref={fileInputRef}
@@ -102,13 +101,12 @@ export default function ImageUpload({ value, onChange, folder }: ImageUploadProp
           />
           {uploading ? (
             <div className="flex flex-col items-center gap-2">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Uploading...</p>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <Upload className="w-8 h-8 text-gray-400" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Click to upload image
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-500">
