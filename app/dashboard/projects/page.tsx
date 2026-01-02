@@ -71,24 +71,24 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex justify-between items-center"
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4"
       >
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            <span className="text-red-600 dark:text-red-400">Projects</span>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
+            <span className="bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">Projects</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-400">
             Showcase your amazing work and projects
           </p>
         </div>
         <motion.button
           onClick={handleCreate}
-          className="px-6 py-3 bg-red-600 text-white hover:bg-red-700 transition-all font-medium"
+          className="w-full sm:w-auto px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 transition-all font-semibold text-sm sm:text-base rounded-lg sm:rounded-xl shadow-lg shadow-red-500/50"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -110,30 +110,34 @@ export default function ProjectsPage() {
           <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">Create your first project to get started</p>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           {projects.map((project, index) => (
             <motion.div
               key={project._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
+              whileHover={{ scale: 1.03, y: -5 }}
+              className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden"
             >
               {/* Featured badge */}
               {project.featured && (
-                <div className="px-3 py-1 bg-yellow-500 text-white text-xs font-bold">
-                  Featured
+                <div className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-xs font-bold">
+                  ⭐ Featured
                 </div>
               )}
 
               {/* Type badge */}
-              <div className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-xs font-medium">
-                {project.isCustomCode ? 'Custom Code' : 'WordPress'}
+              <div className={`px-4 py-2 text-xs font-semibold ${project.featured ? '' : 'pt-4'} ${
+                project.isCustomCode 
+                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' 
+                  : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+              }`}>
+                {project.isCustomCode ? '💻 Custom Code' : '🔧 WordPress'}
               </div>
 
               {/* Image */}
-              <div className="relative h-56 overflow-hidden">
+              <div className="relative h-40 sm:h-56 overflow-hidden">
                 {project.image ? (
                   <img
                     src={project.image}
@@ -151,16 +155,16 @@ export default function ProjectsPage() {
                 )}
               </div>
 
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* Category */}
                 <div className="mb-3">
-                  <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-medium">
+                  <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold rounded-full">
                     {project.category}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
                   {project.title}
                 </h3>
 
@@ -213,10 +217,10 @@ export default function ProjectsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-4 border-t border-gray-300 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <motion.button
                     onClick={() => handleEdit(project)}
-                    className="flex-1 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all text-sm font-medium"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 transition-all text-xs sm:text-sm font-semibold rounded-lg shadow-md"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -224,7 +228,7 @@ export default function ProjectsPage() {
                   </motion.button>
                   <motion.button
                     onClick={() => handleDelete(project._id)}
-                    className="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-all"
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 transition-all text-xs sm:text-sm font-semibold rounded-lg shadow-md"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >

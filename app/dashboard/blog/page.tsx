@@ -112,24 +112,24 @@ export default function BlogPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex justify-between items-center"
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4"
       >
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Blog <span className="text-blue-600 dark:text-blue-400">Posts</span>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
+            Blog <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Posts</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-400">
             Manage and create your blog content
           </p>
         </div>
         <motion.button
           onClick={handleCreate}
-          className="px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 transition-all font-medium"
+          className="w-full sm:w-auto px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all font-semibold text-sm sm:text-base rounded-lg sm:rounded-xl shadow-lg shadow-blue-500/50"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -151,27 +151,27 @@ export default function BlogPage() {
           <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">Create your first blog post to get started</p>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           {blogs.map((blog, index) => (
             <motion.div
               key={blog._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
+              whileHover={{ scale: 1.03, y: -5 }}
+              className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200 dark:border-gray-700 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden"
             >
               {/* Status indicator */}
-              <div className={`px-3 py-1 text-xs font-medium ${
+              <div className={`px-4 py-2 text-xs font-semibold ${
                 blog.published
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400'
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                  : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
               }`}>
-                {blog.published ? 'Published' : 'Draft'}
+                {blog.published ? '✓ Published' : '○ Draft'}
               </div>
 
               {/* Image */}
-              <div className="relative h-48 overflow-hidden">
+              <div className="relative h-40 sm:h-48 overflow-hidden">
                 {blog.image ? (
                   <img
                     src={blog.image}
@@ -189,16 +189,16 @@ export default function BlogPage() {
                 )}
               </div>
 
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* Category */}
                 <div className="mb-3">
-                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium">
+                  <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-full">
                     {blog.category}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
                   {blog.title}
                 </h3>
 
@@ -208,8 +208,9 @@ export default function BlogPage() {
                 </p>
 
                 {/* Meta info */}
-                <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
+                <div className="flex items-center gap-3 sm:gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
                   <span>{new Date(blog.date).toLocaleDateString()}</span>
+                  <span>•</span>
                   <span>{blog.readTime}</span>
                 </div>
 
@@ -233,10 +234,10 @@ export default function BlogPage() {
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-4 border-t border-gray-300 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <motion.button
                     onClick={() => handleTogglePublish(blog, true)}
-                    className="flex-1 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all text-sm font-medium"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 transition-all text-xs sm:text-sm font-semibold rounded-lg shadow-md"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -244,7 +245,7 @@ export default function BlogPage() {
                   </motion.button>
                   <motion.button
                     onClick={() => handleEdit(blog)}
-                    className="px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all"
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all text-xs sm:text-sm font-semibold rounded-lg shadow-md"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >

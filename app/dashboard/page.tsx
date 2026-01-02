@@ -89,47 +89,60 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-          Dashboard <span className="text-blue-600 dark:text-blue-400">Overview</span>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-2">
+          Dashboard <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Overview</span>
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-400">
           Welcome to your admin dashboard. Manage your content with ease.
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
         {statCards.map((stat, index) => (
           <motion.div
             key={stat.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.03, y: -5 }}
           >
             <Link href={stat.href}>
               <div 
-                className="bg-white dark:bg-gray-800 p-6 border border-gray-300 dark:border-gray-700 shadow-sm hover:shadow-md transition-all"
-                style={{ borderLeft: `4px solid ${stat.color}` }}
+                className="relative bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all overflow-hidden group"
               >
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                  {stat.title}
-                </p>
-                <p 
-                  className="text-4xl font-bold"
-                  style={{ color: stat.color }}
-                >
-                  {stats.loading ? (
-                    <span className="inline-block w-12 h-8 bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                  ) : (
-                    stat.value
-                  )}
-                </p>
+                {/* Gradient overlay */}
+                <div 
+                  className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity"
+                  style={{ backgroundColor: stat.color }}
+                />
+                <div className="relative z-10">
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3">
+                    {stat.title}
+                  </p>
+                  <p 
+                    className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2"
+                    style={{ color: stat.color }}
+                  >
+                    {stats.loading ? (
+                      <span className="inline-block w-16 h-10 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+                    ) : (
+                      stat.value
+                    )}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-2 h-2 rounded-full animate-pulse"
+                      style={{ backgroundColor: stat.color }}
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Active</span>
+                  </div>
+                </div>
               </div>
             </Link>
           </motion.div>
@@ -141,22 +154,29 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-white dark:bg-gray-800 p-6 border border-gray-300 dark:border-gray-700 shadow-sm"
+        className="bg-gradient-to-br from-white to-purple-50/50 dark:from-slate-800 dark:to-purple-900/20 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border border-purple-200 dark:border-purple-500/30 shadow-xl"
       >
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4 sm:mb-6">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {quickActions.map((action, index) => (
             <Link key={action.title} href={action.href}>
               <motion.div
-                className="p-4 border border-gray-300 dark:border-gray-700 hover:shadow-md transition-all"
-                style={{ borderLeft: `4px solid ${action.color}` }}
-                whileHover={{ scale: 1.02 }}
+                className="relative p-4 sm:p-5 bg-gradient-to-br from-white to-gray-50 dark:from-slate-700 dark:to-slate-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-xl transition-all overflow-hidden group"
+                whileHover={{ scale: 1.02, y: -3 }}
                 whileTap={{ scale: 0.98 }}
               >
+                <div 
+                  className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full"
+                  style={{ backgroundColor: action.color }}
+                />
+                <div 
+                  className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-10 group-hover:opacity-20 transition-opacity"
+                  style={{ backgroundColor: action.color }}
+                />
                 <p 
-                  className="font-medium"
+                  className="relative z-10 font-semibold text-base"
                   style={{ color: action.color }}
                 >
                   {action.title}
