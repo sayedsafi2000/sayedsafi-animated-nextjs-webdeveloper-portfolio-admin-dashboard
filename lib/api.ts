@@ -1,30 +1,30 @@
 import axios from 'axios';
 
 // API URL configuration
-// Local development: always use localhost:5000
-// Production: use environment variable (required)
+// Priority: Environment variable > Local development fallback
+// Local development: Use env var if set, otherwise fallback to localhost:5000
+// Production: Environment variable is required
 const getAPIURL = () => {
-  // Check if we're in local development FIRST
+  // First, check if environment variable is set (works everywhere)
+  const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  // Check if env var exists and is not empty
+  if (envApiUrl && envApiUrl.trim() !== '') {
+    return envApiUrl.trim();
+  }
+  
+  // If no env var, check if we're in local development
   const isNodeDevelopment = process.env.NODE_ENV === 'development';
   const isClientLocalhost = typeof window !== 'undefined' && 
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
   
-  // In local development, ALWAYS use localhost backend
+  // In local development without env var, use localhost backend
   if (isNodeDevelopment || isClientLocalhost) {
     return 'http://localhost:5000/api';
   }
   
-  // In production, use environment variable (required)
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  
-  if (!apiUrl) {
-    const errorMsg = 'NEXT_PUBLIC_API_URL environment variable is not set in production.';
-    console.error('❌', errorMsg);
-    console.error('⚠️ Please set NEXT_PUBLIC_API_URL in Vercel environment variables.');
-    return ''; // Return empty string to make errors obvious
-  }
-  
-  return apiUrl;
+  // In production without env var, this is an error
+  return ''; // Return empty string to make errors obvious
 };
 
 const API_URL = getAPIURL();
