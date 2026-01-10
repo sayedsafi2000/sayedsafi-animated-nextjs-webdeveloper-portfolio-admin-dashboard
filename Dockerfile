@@ -1,4 +1,6 @@
 # Multi-stage build for Next.js Admin Dashboard
+# This Dockerfile works when admin_dashboard/ is deployed as a standalone repository
+# If using monorepo with docker-compose, ensure context is set to admin_dashboard/ directory
 FROM node:20-alpine AS base
 
 # Install dependencies only when needed
@@ -6,15 +8,15 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
-COPY admin_dashboard/package.json admin_dashboard/package-lock.json* ./
+# Copy package files (from current directory, not subdirectory)
+COPY package.json package-lock.json* ./
 RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY admin_dashboard/ .
+COPY . .
 
 # Set environment variables for build (you can add build-time env vars here if needed)
 ENV NEXT_TELEMETRY_DISABLED=1
