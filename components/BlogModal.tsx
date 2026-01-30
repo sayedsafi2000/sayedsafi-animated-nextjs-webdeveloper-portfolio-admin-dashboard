@@ -54,7 +54,7 @@ interface BlogModalProps {
 export default function BlogModal({ blog, onClose }: BlogModalProps) {
   const [loading, setLoading] = useState(false)
   const [tagsString, setTagsString] = useState('')
-  const [content, setContent] = useState('')
+  const [content, setContent] = useState(blog?.content || '')
   const [showSEO, setShowSEO] = useState(false)
   const [seoValidation, setSeoValidation] = useState<{errors: string[], warnings: string[]} | null>(null)
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<BlogPost>({
@@ -109,11 +109,14 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
 
   useEffect(() => {
     if (blog) {
+      const blogContent = blog.content || ''
+      // Set content state immediately
+      setContent(blogContent)
+      
       setValue('slug', blog.slug)
       setValue('title', blog.title)
       setValue('excerpt', blog.excerpt)
-      setValue('content', blog.content || '')
-      setContent(blog.content || '')
+      setValue('content', blogContent)
       setValue('date', blog.date.split('T')[0])
       setValue('readTime', blog.readTime)
       setValue('category', blog.category)
@@ -142,6 +145,7 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
     } else {
       setTagsString('')
       setContent('')
+      setValue('content', '')
     }
   }, [blog, setValue])
 
@@ -275,6 +279,7 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
             </label>
             <div className="border border-gray-300 dark:border-gray-600 overflow-hidden">
               <ReactQuill
+                key={blog?._id || 'new'}
                 theme="snow"
                 value={content}
                 onChange={(value) => {
