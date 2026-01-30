@@ -1,14 +1,213 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Component, ErrorInfo, ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { blogAPI } from '@/lib/api'
 import toast from 'react-hot-toast'
 import ImageUpload from './ImageUpload'
 import dynamic from 'next/dynamic'
+import DOMPurify from 'dompurify'
+import { registerQuillFonts, CUSTOM_FONTS } from '../lib/quillFonts'
 
-// Dynamically import ReactQuill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
+// Dynamically import ReactQuill with font registration
+const ReactQuill = dynamic(
+  async () => {
+    // CRITICAL: Register fonts BEFORE importing ReactQuill
+    const registered = await registerQuillFonts()
+    
+    if (!registered) {
+      console.warn('⚠️ Fonts not registered, but continuing with ReactQuill import')
+    }
+    
+    // Import ReactQuill AFTER fonts are registered
+    const ReactQuillModule = await import('react-quill')
+    
+    // Double-check font registration after ReactQuill loads
+    if (typeof window !== 'undefined') {
+      const Quill = (ReactQuillModule as any).Quill || (window as any).Quill
+      if (Quill && Quill.import) {
+        try {
+          let Font = null
+          try {
+            Font = Quill.import('attributors/style/font') as any
+          } catch (e) {
+            Font = Quill.import('formats/font') as any
+          }
+          
+          if (Font && (!Font.whitelist || Font.whitelist.length === 0 || Font.whitelist[0] === 'sans-serif')) {
+            Font.whitelist = CUSTOM_FONTS
+            Quill.register(Font, true)
+            console.log('✅ Fonts re-registered after ReactQuill load')
+          }
+        } catch (e) {
+          console.warn('Font re-registration failed:', e)
+        }
+      }
+    }
+    
+    return ReactQuillModule
+  },
+  { 
+    ssr: false,
+    loading: () => <div className="p-4 text-center">Loading editor...</div>
+  }
+)
+
+// Error Boundary Component for ReactQuill
+class QuillErrorBoundary extends Component<
+  { children: ReactNode; onError: () => void },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; onError: () => void }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ReactQuill Error:', error, errorInfo)
+    this.props.onError()
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null // Let parent handle the error UI
+    }
+    return this.props.children
+  }
+}
+
+// Function to extract plain text from HTML (fallback for corrupted content)
+const htmlToPlainText = (html: string): string => {
+  if (!html || typeof html !== 'string') return ''
+  
+  try {
+    // Create a temporary DOM element to extract text
+    const tmp = typeof document !== 'undefined' ? document.createElement('div') : null
+    if (!tmp) return html.replace(/<[^>]*>/g, '').trim()
+    
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ''
+  } catch (error) {
+    // Fallback: simple regex removal
+    return html.replace(/<[^>]*>/g, '').trim()
+  }
+}
+
+// Function to clean and sanitize HTML content for ReactQuill (preserves formatting)
+const cleanHTMLContent = (html: string, preserveFormatting: boolean = false): string => {
+  if (!html || typeof html !== 'string') return '<p><br></p>'
+  
+  try {
+    // If preserving formatting (for editing), use minimal sanitization
+    if (preserveFormatting) {
+      // Only remove dangerous content, preserve all formatting
+      const sanitized = DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: [
+          'p', 'br', 'strong', 'em', 'u', 's', 'strike', 'b', 'i',
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+          'ul', 'ol', 'li',
+          'blockquote', 'pre', 'code',
+          'a', 'img',
+          'div', 'span',
+          'sub', 'sup', 'mark', 'del', 'ins'
+        ],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'style', 'target', 'rel', 'width', 'height'],
+        ALLOW_DATA_ATTR: false,
+        KEEP_CONTENT: true,
+        // Preserve style attributes for formatting
+        ALLOW_UNKNOWN_PROTOCOLS: false
+      })
+      
+      // Only remove dangerous patterns, don't modify structure or formatting
+      let cleaned = sanitized
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+        .replace(/javascript:/gi, '')
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+      
+      // Remove zero-width characters but preserve formatting
+      cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF]/g, '')
+      
+      // Ensure content is not empty
+      if (!cleaned.trim() || cleaned.trim() === '<br>' || cleaned.trim() === '<br/>') {
+        return '<p><br></p>'
+      }
+      
+      return cleaned
+    }
+    
+    // For initial load or corrupted content, use stricter sanitization
+    // First, use DOMPurify to sanitize HTML
+    const sanitized = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'u', 's', 'strike',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'ul', 'ol', 'li',
+        'blockquote', 'pre', 'code',
+        'a', 'img',
+        'div', 'span',
+        'sub', 'sup'
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'style', 'target', 'rel'],
+      ALLOW_DATA_ATTR: false,
+      KEEP_CONTENT: true
+    })
+    
+    // Remove any remaining problematic patterns
+    let cleaned = sanitized
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    
+    // Fix nested formatting issues - remove empty tags recursively
+    let prevLength = 0
+    let iterations = 0
+    while (prevLength !== cleaned.length && iterations < 10) {
+      prevLength = cleaned.length
+      cleaned = cleaned.replace(/<(\w+)[^>]*>\s*<\/\1>/gi, '')
+      iterations++
+    }
+    
+    // Check for deeply nested or malformed structures that might cause issues
+    // Count opening and closing tags to detect imbalance
+    const openTags = (cleaned.match(/<[^/][^>]*>/g) || []).length
+    const closeTags = (cleaned.match(/<\/[^>]+>/g) || []).length
+    
+    // If tags are severely imbalanced, convert to plain text
+    if (Math.abs(openTags - closeTags) > 5) {
+      console.warn('Detected severely imbalanced HTML tags, converting to plain text')
+      const plainText = htmlToPlainText(cleaned)
+      return plainText ? `<p>${plainText}</p>` : '<p><br></p>'
+    }
+    
+    // Remove any zero-width characters or problematic unicode
+    cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF]/g, '')
+    
+    // Ensure proper paragraph structure
+    if (!cleaned.trim() || cleaned.trim() === '<br>' || cleaned.trim() === '<br/>') {
+      return '<p><br></p>'
+    }
+    
+    // If content doesn't start with a block element, wrap it
+    if (!cleaned.match(/^<(p|div|h[1-6]|ul|ol|blockquote|pre)/i)) {
+      cleaned = `<p>${cleaned}</p>`
+    }
+    
+    return cleaned || '<p><br></p>'
+  } catch (error) {
+    console.error('Error cleaning HTML content:', error)
+    // On error, convert to plain text as fallback
+    const plainText = htmlToPlainText(html)
+    return plainText ? `<p>${plainText}</p>` : '<p><br></p>'
+  }
+}
 
 interface BlogPost {
   _id?: string
@@ -54,9 +253,11 @@ interface BlogModalProps {
 export default function BlogModal({ blog, onClose }: BlogModalProps) {
   const [loading, setLoading] = useState(false)
   const [tagsString, setTagsString] = useState('')
-  const [content, setContent] = useState(blog?.content || '')
+  const [content, setContent] = useState(blog?.content ? cleanHTMLContent(blog.content, true) : '<p><br></p>')
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [showSEO, setShowSEO] = useState(false)
   const [seoValidation, setSeoValidation] = useState<{errors: string[], warnings: string[]} | null>(null)
+  const [quillError, setQuillError] = useState(false)
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<BlogPost>({
     defaultValues: {
       slug: '',
@@ -81,11 +282,18 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
     }
   })
 
+  // Font display names mapping
+  const fontDisplayNames: Record<string, string> = {
+    'sans-serif': 'Sans Serif',
+    'serif': 'Serif',
+    'monospace': 'Monospace'
+  }
+
   // Quill editor modules configuration
   const quillModules = {
     toolbar: [
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-      [{ 'font': [] }],
+      [{ 'font': CUSTOM_FONTS }],
       [{ 'size': [] }],
       ['bold', 'italic', 'underline', 'strike', 'blockquote'],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
@@ -107,16 +315,23 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
     'code-block'
   ]
 
+  // Register fonts on mount
+  useEffect(() => {
+    registerQuillFonts()
+  }, [])
+
   useEffect(() => {
     if (blog) {
+      // For editing, preserve formatting - use minimal sanitization
       const blogContent = blog.content || ''
-      // Set content state immediately
-      setContent(blogContent)
       
+      // Reset error state
+      setQuillError(false)
+      
+      // Set all form values first
       setValue('slug', blog.slug)
       setValue('title', blog.title)
       setValue('excerpt', blog.excerpt)
-      setValue('content', blogContent)
       setValue('date', blog.date.split('T')[0])
       setValue('readTime', blog.readTime)
       setValue('category', blog.category)
@@ -142,10 +357,44 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
       setValue('publishedAt', blog.publishedAt ? blog.publishedAt.split('T')[0] : '')
       setValue('scheduledAt', blog.scheduledAt ? blog.scheduledAt.split('T')[0] : '')
       setTagsString((blog.tags || []).join(', '))
+      
+      // Use setTimeout to ensure ReactQuill is ready before setting content
+      // Use preserveFormatting=true to keep all styling
+      const timer = setTimeout(() => {
+        try {
+          // Clean content but preserve formatting - minimal sanitization
+          let finalContent = blogContent
+          
+          // Only sanitize if content exists, and use preserveFormatting mode
+          if (blogContent && blogContent.trim()) {
+            // Use preserveFormatting=true to keep all styling, fonts, sizes, etc.
+            finalContent = cleanHTMLContent(blogContent, true)
+          } else {
+            finalContent = '<p><br></p>'
+          }
+          
+          // Set content only on initial load to avoid focus loss
+          if (isInitialLoad) {
+            setContent(finalContent)
+            setValue('content', finalContent, { shouldDirty: false })
+            setIsInitialLoad(false)
+          }
+        } catch (error) {
+          console.error('Error setting content:', error)
+          // Fallback to empty content if there's an error
+          setContent('<p><br></p>')
+          setValue('content', '<p><br></p>', { shouldDirty: false })
+          setQuillError(true)
+        }
+      }, 100)
+      
+      return () => clearTimeout(timer)
     } else {
       setTagsString('')
-      setContent('')
-      setValue('content', '')
+      setContent('<p><br></p>')
+      setValue('content', '<p><br></p>')
+      setQuillError(false)
+      setIsInitialLoad(true)
     }
   }, [blog, setValue])
 
@@ -278,21 +527,64 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
               Content *
             </label>
             <div className="border border-gray-300 dark:border-gray-600 overflow-hidden">
-              <ReactQuill
-                key={blog?._id || 'new'}
-                theme="snow"
-                value={content}
-                onChange={(value) => {
-                  setContent(value)
-                  setValue('content', value)
-                }}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder="Start writing your blog post..."
-                className="bg-white dark:bg-gray-800"
-              />
+              {quillError ? (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                  <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+                    Error loading editor. The content may be corrupted.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuillError(false)
+                      setContent('<p><br></p>')
+                      setValue('content', '<p><br></p>')
+                    }}
+                    className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                  >
+                    Reset Editor
+                  </button>
+                </div>
+              ) : (
+                <QuillErrorBoundary
+                  onError={() => {
+                    setQuillError(true)
+                    toast.error('Error loading editor. Content may be corrupted.')
+                  }}
+                >
+                  <ReactQuill
+                    key={blog?._id || 'new'}
+                    theme="snow"
+                    value={content}
+                    onChange={(value) => {
+                      // Don't sanitize onChange - preserve formatting and cursor position
+                      // ReactQuill already handles safe HTML output
+                      setContent(value)
+                      setValue('content', value)
+                      setQuillError(false)
+                    }}
+                    modules={{
+                      toolbar: [
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        [{ 'font': CUSTOM_FONTS }],
+                        [{ 'size': [] }],
+                        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                        ['link', 'image', 'video'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'align': [] }],
+                        ['code-block'],
+                        ['clean']
+                      ]
+                    }}
+                    formats={quillFormats}
+                    placeholder="Start writing your blog post..."
+                    className="bg-white dark:bg-gray-800"
+                    preserveWhitespace={true}
+                  />
+                </QuillErrorBoundary>
+              )}
             </div>
-            {(!content || content.trim() === '' || content === '<p><br></p>') && (
+            {(!content || content.trim() === '' || content === '<p><br></p>' || content === '<p></p>') && (
               <p className="mt-1 text-sm text-red-600">Content is required</p>
             )}
           </div>

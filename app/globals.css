@@ -8,6 +8,14 @@
 /* Import Inter font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
+/* Import fonts for Quill editor */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
 /* Custom gradient backgrounds */
 .bg-gradient-dashboard {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -259,6 +267,24 @@ html {
   color: #9ca3af;
   font-style: normal;
 }
+
+/* Quill Font Families - Default fonts only */
+.ql-font-sans-serif { font-family: sans-serif !important; }
+.ql-font-serif { font-family: serif !important; }
+.ql-font-monospace { font-family: monospace !important; }
+
+/* Ensure font classes apply to editor content */
+.ql-editor span.ql-font-sans-serif,
+.ql-editor p.ql-font-sans-serif,
+.ql-editor div.ql-font-sans-serif { font-family: sans-serif !important; }
+
+.ql-editor span.ql-font-serif,
+.ql-editor p.ql-font-serif,
+.ql-editor div.ql-font-serif { font-family: serif !important; }
+
+.ql-editor span.ql-font-monospace,
+.ql-editor p.ql-font-monospace,
+.ql-editor div.ql-font-monospace { font-family: monospace !important; }
 
 /* Blog Content Styles */
 .blog-content {

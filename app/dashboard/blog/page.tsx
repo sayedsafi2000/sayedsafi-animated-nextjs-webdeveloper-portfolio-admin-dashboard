@@ -29,6 +29,7 @@ export default function BlogPage() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null)
   const [previewBlog, setPreviewBlog] = useState<BlogPost | null>(null)
+  const [loadingBlog, setLoadingBlog] = useState(false)
 
   const fetchBlogs = async () => {
     try {
@@ -95,9 +96,19 @@ export default function BlogPage() {
     fetchBlogs()
   }
 
-  const handleEdit = (blog: BlogPost) => {
-    setEditingBlog(blog)
-    setIsModalOpen(true)
+  const handleEdit = async (blog: BlogPost) => {
+    try {
+      setLoadingBlog(true)
+      // Fetch full blog post with content
+      const response = await blogAPI.getBySlug(blog.slug)
+      setEditingBlog(response.data.post)
+      setIsModalOpen(true)
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to load blog post')
+      console.error('Error fetching blog:', error)
+    } finally {
+      setLoadingBlog(false)
+    }
   }
 
   const handleCreate = () => {
@@ -245,7 +256,8 @@ export default function BlogPage() {
                   </motion.button>
                   <motion.button
                     onClick={() => handleEdit(blog)}
-                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all text-xs sm:text-sm font-semibold rounded-lg shadow-md"
+                    disabled={loadingBlog}
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all text-xs sm:text-sm font-semibold rounded-lg shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
