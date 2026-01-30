@@ -15,7 +15,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Megaphone
 } from 'lucide-react'
 
 import { User } from 'lucide-react'
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3, gradient: 'from-emerald-500 to-teal-500', color: '#10b981' },
   { name: 'Leads', href: '/dashboard/leads', icon: Users, gradient: 'from-orange-500 to-red-500', color: '#f97316' },
   { name: 'Blog Posts', href: '/dashboard/blog', icon: FileText, gradient: 'from-purple-500 to-pink-500', color: '#a855f7' },
+  { name: 'Ads', href: '/dashboard/ads', icon: Megaphone, gradient: 'from-green-500 to-emerald-500', color: '#22c55e' },
   { name: 'Projects', href: '/dashboard/projects', icon: Briefcase, gradient: 'from-red-500 to-rose-500', color: '#ef4444' },
   { name: 'Services', href: '/dashboard/services', icon: Settings, gradient: 'from-amber-500 to-orange-500', color: '#f59e0b' },
   { name: 'Profile', href: '/dashboard/profile', icon: User, gradient: 'from-indigo-500 to-purple-500', color: '#6366f1' },

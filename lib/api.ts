@@ -102,6 +102,10 @@ export const blogAPI = {
     const response = await api.delete(`/blog/${id}`);
     return response.data;
   },
+  validateSEO: async (content: string) => {
+    const response = await api.post('/blog/validate-seo', { content });
+    return response.data;
+  },
 };
 
 // Projects API
@@ -241,6 +245,38 @@ export const leadsAPI = {
   },
   delete: async (id: string) => {
     const response = await api.delete(`/leads/${id}`);
+    return response.data;
+  },
+};
+
+// Ads API
+export const adsAPI = {
+  getAll: async (params?: { active?: boolean; limit?: number }) => {
+    const response = await api.get('/ads', { params });
+    return response.data;
+  },
+  getById: async (id: string) => {
+    const response = await api.get(`/ads/${id}`);
+    return response.data;
+  },
+  create: async (data: any) => {
+    const response = await api.post('/ads', data);
+    return response.data;
+  },
+  update: async (id: string, data: any) => {
+    const response = await api.put(`/ads/${id}`, data);
+    return response.data;
+  },
+  delete: async (id: string) => {
+    const response = await api.delete(`/ads/${id}`);
+    return response.data;
+  },
+  trackClick: async (id: string) => {
+    const response = await api.post(`/ads/${id}/click`);
+    return response.data;
+  },
+  trackImpression: async (id: string) => {
+    const response = await api.post(`/ads/${id}/impression`);
     return response.data;
   },
 };

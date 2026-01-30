@@ -20,9 +20,30 @@ interface BlogPost {
   readTime: string
   category: string
   image: string
+  imageAlt?: string
   link: string
   tags: string[]
   published: boolean
+  // SEO Fields
+  seoTitle?: string
+  metaDescription?: string
+  focusKeyword?: string
+  canonicalUrl?: string
+  robots?: {
+    index: boolean
+    follow: boolean
+  }
+  ogTitle?: string
+  ogDescription?: string
+  ogImage?: string
+  twitterCard?: 'summary' | 'summary_large_image'
+  schemaType?: 'BlogPosting' | 'Article'
+  breadcrumbsEnabled?: boolean
+  status?: 'draft' | 'published' | 'scheduled'
+  publishedAt?: string
+  scheduledAt?: string
+  featured?: boolean
+  allowComments?: boolean
 }
 
 interface BlogModalProps {
@@ -34,6 +55,8 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
   const [loading, setLoading] = useState(false)
   const [tagsString, setTagsString] = useState('')
   const [content, setContent] = useState('')
+  const [showSEO, setShowSEO] = useState(false)
+  const [seoValidation, setSeoValidation] = useState<{errors: string[], warnings: string[]} | null>(null)
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<BlogPost>({
     defaultValues: {
       slug: '',
@@ -44,9 +67,17 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
       readTime: '5 min read',
       category: '',
       image: '',
+      imageAlt: '',
       link: '',
       tags: [],
-      published: true
+      published: true,
+      status: 'published',
+      robots: { index: true, follow: true },
+      twitterCard: 'summary_large_image',
+      schemaType: 'BlogPosting',
+      breadcrumbsEnabled: true,
+      featured: false,
+      allowComments: true
     }
   })
 
@@ -87,9 +118,26 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
       setValue('readTime', blog.readTime)
       setValue('category', blog.category)
       setValue('image', blog.image)
+      setValue('imageAlt', blog.imageAlt || '')
       setValue('link', blog.link)
       setValue('tags', blog.tags || [])
       setValue('published', blog.published)
+      setValue('status', blog.status || (blog.published ? 'published' : 'draft'))
+      setValue('seoTitle', blog.seoTitle || '')
+      setValue('metaDescription', blog.metaDescription || '')
+      setValue('focusKeyword', blog.focusKeyword || '')
+      setValue('canonicalUrl', blog.canonicalUrl || '')
+      setValue('robots', blog.robots || { index: true, follow: true })
+      setValue('ogTitle', blog.ogTitle || '')
+      setValue('ogDescription', blog.ogDescription || '')
+      setValue('ogImage', blog.ogImage || '')
+      setValue('twitterCard', blog.twitterCard || 'summary_large_image')
+      setValue('schemaType', blog.schemaType || 'BlogPosting')
+      setValue('breadcrumbsEnabled', blog.breadcrumbsEnabled !== undefined ? blog.breadcrumbsEnabled : true)
+      setValue('featured', blog.featured || false)
+      setValue('allowComments', blog.allowComments !== undefined ? blog.allowComments : true)
+      setValue('publishedAt', blog.publishedAt ? blog.publishedAt.split('T')[0] : '')
+      setValue('scheduledAt', blog.scheduledAt ? blog.scheduledAt.split('T')[0] : '')
       setTagsString((blog.tags || []).join(', '))
     } else {
       setTagsString('')
@@ -128,7 +176,24 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
         ...data,
         content: content, // Use the content from Quill editor
         tags,
-        date: new Date(data.date).toISOString()
+        date: new Date(data.date).toISOString(),
+        // Include SEO fields
+        seoTitle: data.seoTitle || undefined,
+        metaDescription: data.metaDescription || undefined,
+        focusKeyword: data.focusKeyword || undefined,
+        canonicalUrl: data.canonicalUrl || undefined,
+        robots: data.robots || { index: true, follow: true },
+        ogTitle: data.ogTitle || undefined,
+        ogDescription: data.ogDescription || undefined,
+        ogImage: data.ogImage || undefined,
+        twitterCard: data.twitterCard || 'summary_large_image',
+        schemaType: data.schemaType || 'BlogPosting',
+        breadcrumbsEnabled: data.breadcrumbsEnabled !== undefined ? data.breadcrumbsEnabled : true,
+        status: data.status || (data.published ? 'published' : 'draft'),
+        featured: data.featured || false,
+        allowComments: data.allowComments !== undefined ? data.allowComments : true,
+        imageAlt: data.imageAlt || undefined,
+        scheduledAt: data.status === 'scheduled' && data.scheduledAt ? new Date(data.scheduledAt).toISOString() : undefined
       }
 
       if (blog?._id) {
@@ -268,12 +333,26 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Image
+              Featured Image
             </label>
             <ImageUpload
               value={watch('image')}
               onChange={(url) => setValue('image', url)}
             />
+            <div className="mt-2">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Image Alt Text (Required for SEO) *
+              </label>
+              <input
+                {...register('imageAlt', { required: watch('image') ? 'Alt text is required when image is provided' : false })}
+                type="text"
+                placeholder="Describe the image for accessibility and SEO"
+                className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              />
+              {errors.imageAlt && (
+                <p className="mt-1 text-xs text-red-600">{errors.imageAlt.message}</p>
+              )}
+            </div>
           </div>
 
           <div>
@@ -302,16 +381,258 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
             />
           </div>
 
-          <div className="flex items-center">
-            <input
-              {...register('published')}
-              type="checkbox"
-              id="published"
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            <label htmlFor="published" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-              Published
-            </label>
+          {/* Status and Publishing Controls */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status *
+              </label>
+              <select
+                {...register('status', { required: true })}
+                className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="scheduled">Scheduled</option>
+              </select>
+            </div>
+            {watch('status') === 'scheduled' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Schedule Date
+                </label>
+                <input
+                  {...register('scheduledAt')}
+                  type="datetime-local"
+                  className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg"
+                />
+              </div>
+            )}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center">
+                <input
+                  {...register('featured')}
+                  type="checkbox"
+                  id="featured"
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <label htmlFor="featured" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Featured
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  {...register('allowComments')}
+                  type="checkbox"
+                  id="allowComments"
+                  defaultChecked={true}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <label htmlFor="allowComments" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Allow Comments
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* SEO Section - Collapsible */}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={() => setShowSEO(!showSEO)}
+              className="w-full flex items-center justify-between text-left py-2 text-sm font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              <span>SEO Settings {showSEO ? '▼' : '▶'}</span>
+              <span className="text-xs text-gray-500">Optional</span>
+            </button>
+            
+            {showSEO && (
+              <div className="mt-4 space-y-4 pl-4 border-l-2 border-blue-200 dark:border-blue-800">
+                {/* SEO Title & Meta Description */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      SEO Title
+                      <span className="text-xs text-gray-500 ml-1">
+                        ({watch('seoTitle')?.length || 0}/60)
+                      </span>
+                    </label>
+                    <input
+                      {...register('seoTitle', { 
+                        maxLength: { value: 60, message: 'SEO title must be 60 characters or less' }
+                      })}
+                      type="text"
+                      placeholder="Leave empty to use post title"
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg"
+                    />
+                    {errors.seoTitle && (
+                      <p className="mt-1 text-xs text-red-600">{errors.seoTitle.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Meta Description
+                      <span className="text-xs text-gray-500 ml-1">
+                        ({watch('metaDescription')?.length || 0}/160)
+                      </span>
+                    </label>
+                    <textarea
+                      {...register('metaDescription', { 
+                        maxLength: { value: 160, message: 'Meta description must be 160 characters or less' }
+                      })}
+                      rows={2}
+                      placeholder="Leave empty to use excerpt"
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg"
+                    />
+                    {errors.metaDescription && (
+                      <p className="mt-1 text-xs text-red-600">{errors.metaDescription.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Focus Keyword & Canonical URL */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Focus Keyword
+                    </label>
+                    <input
+                      {...register('focusKeyword')}
+                      type="text"
+                      placeholder="Main keyword for this post"
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Canonical URL
+                    </label>
+                    <input
+                      {...register('canonicalUrl')}
+                      type="url"
+                      placeholder="Leave empty to use default"
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                {/* Robots Meta */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Robots Meta Tags
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center">
+                      <input
+                        {...register('robots.index')}
+                        type="checkbox"
+                        id="robotsIndex"
+                        defaultChecked={true}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <label htmlFor="robotsIndex" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        Index
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        {...register('robots.follow')}
+                        type="checkbox"
+                        id="robotsFollow"
+                        defaultChecked={true}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <label htmlFor="robotsFollow" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        Follow
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Open Graph */}
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Open Graph (Social Media)</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                        OG Title
+                      </label>
+                      <input
+                        {...register('ogTitle')}
+                        type="text"
+                        placeholder="Leave empty to use SEO title or post title"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                        OG Description
+                      </label>
+                      <textarea
+                        {...register('ogDescription')}
+                        rows={2}
+                        placeholder="Leave empty to use meta description or excerpt"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                        OG Image URL
+                      </label>
+                      <input
+                        {...register('ogImage')}
+                        type="url"
+                        placeholder="Leave empty to use featured image"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                        Twitter Card Type
+                      </label>
+                      <select
+                        {...register('twitterCard')}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs rounded-lg"
+                      >
+                        <option value="summary">Summary</option>
+                        <option value="summary_large_image">Summary Large Image</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Schema & Advanced */}
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Schema & Advanced</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                        Schema Type
+                      </label>
+                      <select
+                        {...register('schemaType')}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs rounded-lg"
+                      >
+                        <option value="BlogPosting">BlogPosting</option>
+                        <option value="Article">Article</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center pt-6">
+                      <input
+                        {...register('breadcrumbsEnabled')}
+                        type="checkbox"
+                        id="breadcrumbsEnabled"
+                        defaultChecked={true}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <label htmlFor="breadcrumbsEnabled" className="ml-2 text-xs text-gray-700 dark:text-gray-300">
+                        Enable Breadcrumbs
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
