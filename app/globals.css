@@ -268,10 +268,22 @@ html {
   font-style: normal;
 }
 
-/* Quill Font Families - Default fonts only */
+/* Quill Font Families - Default fonts */
 .ql-font-sans-serif { font-family: sans-serif !important; }
 .ql-font-serif { font-family: serif !important; }
 .ql-font-monospace { font-family: monospace !important; }
+
+/* Bangla Fonts */
+.ql-font-noto-sans-bengali { font-family: 'Noto Sans Bengali', sans-serif !important; }
+
+/* English Fonts */
+.ql-font-roboto { font-family: 'Roboto', sans-serif !important; }
+.ql-font-poppins { font-family: 'Poppins', sans-serif !important; }
+.ql-font-open-sans { font-family: 'Open Sans', sans-serif !important; }
+.ql-font-lato { font-family: 'Lato', sans-serif !important; }
+.ql-font-lexend { font-family: 'Lexend', sans-serif !important; }
+.ql-font-arial { font-family: Arial, Helvetica, sans-serif !important; }
+.ql-font-times-new-roman { font-family: 'Times New Roman', Times, serif !important; }
 
 /* Ensure font classes apply to editor content */
 .ql-editor span.ql-font-sans-serif,
@@ -285,6 +297,67 @@ html {
 .ql-editor span.ql-font-monospace,
 .ql-editor p.ql-font-monospace,
 .ql-editor div.ql-font-monospace { font-family: monospace !important; }
+
+.ql-editor span.ql-font-noto-sans-bengali,
+.ql-editor p.ql-font-noto-sans-bengali,
+.ql-editor div.ql-font-noto-sans-bengali { font-family: 'Noto Sans Bengali', sans-serif !important; }
+
+.ql-editor span.ql-font-roboto,
+.ql-editor p.ql-font-roboto,
+.ql-editor div.ql-font-roboto { font-family: 'Roboto', sans-serif !important; }
+
+.ql-editor span.ql-font-poppins,
+.ql-editor p.ql-font-poppins,
+.ql-editor div.ql-font-poppins { font-family: 'Poppins', sans-serif !important; }
+
+.ql-editor span.ql-font-open-sans,
+.ql-editor p.ql-font-open-sans,
+.ql-editor div.ql-font-open-sans { font-family: 'Open Sans', sans-serif !important; }
+
+.ql-editor span.ql-font-lato,
+.ql-editor p.ql-font-lato,
+.ql-editor div.ql-font-lato { font-family: 'Lato', sans-serif !important; }
+
+.ql-editor span.ql-font-lexend,
+.ql-editor p.ql-font-lexend,
+.ql-editor div.ql-font-lexend { font-family: 'Lexend', sans-serif !important; }
+
+.ql-editor span.ql-font-arial,
+.ql-editor p.ql-font-arial,
+.ql-editor div.ql-font-arial { font-family: Arial, Helvetica, sans-serif !important; }
+
+.ql-editor span.ql-font-times-new-roman,
+.ql-editor p.ql-font-times-new-roman,
+.ql-editor div.ql-font-times-new-roman { font-family: 'Times New Roman', Times, serif !important; }
+
+/* Quill Font Picker Dropdown - show font names in their own font */
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="sans-serif"]::before { font-family: sans-serif; content: 'Sans Serif'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="serif"]::before { font-family: serif; content: 'Serif'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="monospace"]::before { font-family: monospace; content: 'Monospace'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="noto-sans-bengali"]::before { font-family: 'Noto Sans Bengali', sans-serif; content: 'নোটো বাংলা'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="roboto"]::before { font-family: 'Roboto', sans-serif; content: 'Roboto'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="poppins"]::before { font-family: 'Poppins', sans-serif; content: 'Poppins'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="open-sans"]::before { font-family: 'Open Sans', sans-serif; content: 'Open Sans'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="lato"]::before { font-family: 'Lato', sans-serif; content: 'Lato'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="lexend"]::before { font-family: 'Lexend', sans-serif; content: 'Lexend'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="arial"]::before { font-family: Arial, sans-serif; content: 'Arial'; }
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="times-new-roman"]::before { font-family: 'Times New Roman', serif; content: 'Times New Roman'; }
+
+/* Quill Font Picker Label - show selected font name */
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="sans-serif"]::before { font-family: sans-serif; content: 'Sans Serif'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before { font-family: serif; content: 'Serif'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="monospace"]::before { font-family: monospace; content: 'Monospace'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="noto-sans-bengali"]::before { font-family: 'Noto Sans Bengali', sans-serif; content: 'নোটো বাংলা'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="roboto"]::before { font-family: 'Roboto', sans-serif; content: 'Roboto'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="poppins"]::before { font-family: 'Poppins', sans-serif; content: 'Poppins'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="open-sans"]::before { font-family: 'Open Sans', sans-serif; content: 'Open Sans'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="lato"]::before { font-family: 'Lato', sans-serif; content: 'Lato'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="lexend"]::before { font-family: 'Lexend', sans-serif; content: 'Lexend'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="arial"]::before { font-family: Arial, sans-serif; content: 'Arial'; }
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="times-new-roman"]::before { font-family: 'Times New Roman', serif; content: 'Times New Roman'; }
+
+/* Default font picker label when no font selected */
+.ql-snow .ql-picker.ql-font .ql-picker-label:not([data-value])::before { content: 'Sans Serif'; }
 
 /* Blog Content Styles */
 .blog-content {

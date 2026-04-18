@@ -1,11 +1,19 @@
 // Quill Font Registration Module
 // This must be imported before ReactQuill to register custom fonts
 
-// Default Quill fonts only
+// Bangla, English & Default fonts
 export const CUSTOM_FONTS: string[] = [
-  'sans-serif',  // Sans Serif
-  'serif',        // Serif
-  'monospace'     // Monospace
+  'sans-serif',         // Sans Serif (default)
+  'serif',              // Serif
+  'monospace',          // Monospace
+  'noto-sans-bengali',  // নোটো সান্স বাংলা (Bangla)
+  'roboto',             // Roboto (English)
+  'poppins',            // Poppins (English)
+  'open-sans',          // Open Sans (English)
+  'lato',               // Lato (English)
+  'lexend',             // Lexend (English)
+  'arial',              // Arial (English)
+  'times-new-roman'     // Times New Roman (English)
 ]
 
 let fontsRegistered = false

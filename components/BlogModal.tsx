@@ -286,7 +286,15 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
   const fontDisplayNames: Record<string, string> = {
     'sans-serif': 'Sans Serif',
     'serif': 'Serif',
-    'monospace': 'Monospace'
+    'monospace': 'Monospace',
+    'noto-sans-bengali': 'নোটো বাংলা (Bangla)',
+    'roboto': 'Roboto',
+    'poppins': 'Poppins',
+    'open-sans': 'Open Sans',
+    'lato': 'Lato',
+    'lexend': 'Lexend',
+    'arial': 'Arial',
+    'times-new-roman': 'Times New Roman'
   }
 
   // Quill editor modules configuration
@@ -511,10 +519,16 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Excerpt *
+              <span className="text-xs text-gray-500 ml-1">
+                ({watch('excerpt')?.length || 0}/10000)
+              </span>
             </label>
             <textarea
-              {...register('excerpt', { required: 'Excerpt is required' })}
-              rows={3}
+              {...register('excerpt', { 
+                required: 'Excerpt is required',
+                maxLength: { value: 10000, message: 'Excerpt cannot exceed 10000 characters' }
+              })}
+              rows={5}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
             {errors.excerpt && (
