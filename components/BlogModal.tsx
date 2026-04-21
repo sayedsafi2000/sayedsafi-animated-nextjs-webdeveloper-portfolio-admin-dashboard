@@ -98,114 +98,29 @@ const htmlToPlainText = (html: string): string => {
 }
 
 // Function to clean and sanitize HTML content for ReactQuill (preserves formatting)
-const cleanHTMLContent = (html: string, preserveFormatting: boolean = false): string => {
+const cleanHTMLContent = (html: string): string => {
   if (!html || typeof html !== 'string') return '<p><br></p>'
   
   try {
-    // If preserving formatting (for editing), use minimal sanitization
-    if (preserveFormatting) {
-      // Only remove dangerous content, preserve all formatting
-      const sanitized = DOMPurify.sanitize(html, {
-        ALLOWED_TAGS: [
-          'p', 'br', 'strong', 'em', 'u', 's', 'strike', 'b', 'i',
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-          'ul', 'ol', 'li',
-          'blockquote', 'pre', 'code',
-          'a', 'img',
-          'div', 'span',
-          'sub', 'sup', 'mark', 'del', 'ins'
-        ],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'style', 'target', 'rel', 'width', 'height'],
-        ALLOW_DATA_ATTR: false,
-        KEEP_CONTENT: true,
-        // Preserve style attributes for formatting
-        ALLOW_UNKNOWN_PROTOCOLS: false
-      })
-      
-      // Only remove dangerous patterns, don't modify structure or formatting
-      let cleaned = sanitized
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-        .replace(/javascript:/gi, '')
-        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-      
-      // Remove zero-width characters but preserve formatting
-      cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF]/g, '')
-      
-      // Ensure content is not empty
-      if (!cleaned.trim() || cleaned.trim() === '<br>' || cleaned.trim() === '<br/>') {
-        return '<p><br></p>'
-      }
-      
-      return cleaned
-    }
-    
-    // For initial load or corrupted content, use stricter sanitization
-    // First, use DOMPurify to sanitize HTML
+    // Use DOMPurify with a generous set of allowed tags to preserve WordPress-like formatting
     const sanitized = DOMPurify.sanitize(html, {
       ALLOWED_TAGS: [
-        'p', 'br', 'strong', 'em', 'u', 's', 'strike',
+        'p', 'br', 'strong', 'em', 'u', 's', 'strike', 'b', 'i',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'ul', 'ol', 'li',
         'blockquote', 'pre', 'code',
         'a', 'img',
         'div', 'span',
-        'sub', 'sup'
+        'sub', 'sup', 'mark', 'del', 'ins'
       ],
-      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'style', 'target', 'rel'],
-      ALLOW_DATA_ATTR: false,
-      KEEP_CONTENT: true
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'style', 'target', 'rel', 'width', 'height'],
+      KEEP_CONTENT: true,
     })
     
-    // Remove any remaining problematic patterns
-    let cleaned = sanitized
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-      .replace(/javascript:/gi, '')
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-    
-    // Fix nested formatting issues - remove empty tags recursively
-    let prevLength = 0
-    let iterations = 0
-    while (prevLength !== cleaned.length && iterations < 10) {
-      prevLength = cleaned.length
-      cleaned = cleaned.replace(/<(\w+)[^>]*>\s*<\/\1>/gi, '')
-      iterations++
-    }
-    
-    // Check for deeply nested or malformed structures that might cause issues
-    // Count opening and closing tags to detect imbalance
-    const openTags = (cleaned.match(/<[^/][^>]*>/g) || []).length
-    const closeTags = (cleaned.match(/<\/[^>]+>/g) || []).length
-    
-    // If tags are severely imbalanced, convert to plain text
-    if (Math.abs(openTags - closeTags) > 5) {
-      console.warn('Detected severely imbalanced HTML tags, converting to plain text')
-      const plainText = htmlToPlainText(cleaned)
-      return plainText ? `<p>${plainText}</p>` : '<p><br></p>'
-    }
-    
-    // Remove any zero-width characters or problematic unicode
-    cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF]/g, '')
-    
-    // Ensure proper paragraph structure
-    if (!cleaned.trim() || cleaned.trim() === '<br>' || cleaned.trim() === '<br/>') {
-      return '<p><br></p>'
-    }
-    
-    // If content doesn't start with a block element, wrap it
-    if (!cleaned.match(/^<(p|div|h[1-6]|ul|ol|blockquote|pre)/i)) {
-      cleaned = `<p>${cleaned}</p>`
-    }
-    
-    return cleaned || '<p><br></p>'
+    return sanitized || '<p><br></p>'
   } catch (error) {
     console.error('Error cleaning HTML content:', error)
-    // On error, convert to plain text as fallback
-    const plainText = htmlToPlainText(html)
-    return plainText ? `<p>${plainText}</p>` : '<p><br></p>'
+    return '<p><br></p>'
   }
 }
 
@@ -253,7 +168,7 @@ interface BlogModalProps {
 export default function BlogModal({ blog, onClose }: BlogModalProps) {
   const [loading, setLoading] = useState(false)
   const [tagsString, setTagsString] = useState('')
-  const [content, setContent] = useState(blog?.content ? cleanHTMLContent(blog.content, true) : '<p><br></p>')
+  const [content, setContent] = useState(blog?.content || '<p><br></p>')
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [showSEO, setShowSEO] = useState(false)
   const [seoValidation, setSeoValidation] = useState<{errors: string[], warnings: string[]} | null>(null)
@@ -370,28 +285,21 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
       // Use preserveFormatting=true to keep all styling
       const timer = setTimeout(() => {
         try {
-          // Clean content but preserve formatting - minimal sanitization
-          let finalContent = blogContent
-          
-          // Only sanitize if content exists, and use preserveFormatting mode
-          if (blogContent && blogContent.trim()) {
-            // Use preserveFormatting=true to keep all styling, fonts, sizes, etc.
-            finalContent = cleanHTMLContent(blogContent, true)
-          } else {
-            finalContent = '<p><br></p>'
-          }
-          
-          // Set content only on initial load to avoid focus loss
-          if (isInitialLoad) {
-            setContent(finalContent)
-            setValue('content', finalContent, { shouldDirty: false })
-            setIsInitialLoad(false)
-          }
-        } catch (error) {
-          console.error('Error setting content:', error)
-          // Fallback to empty content if there's an error
-          setContent('<p><br></p>')
-          setValue('content', '<p><br></p>', { shouldDirty: false })
+              let finalContent = blogContent
+              
+              if (blogContent && blogContent.trim()) {
+                finalContent = blogContent
+              } else {
+                finalContent = '<p><br></p>'
+              }
+              
+              if (isInitialLoad) {
+                setContent(finalContent)
+                setValue('content', finalContent, { shouldDirty: false })
+                setIsInitialLoad(false)
+              }
+            } catch (error) {
+              console.error('Error setting content:', error)
           setQuillError(true)
         }
       }, 100)
@@ -540,7 +448,7 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Content *
             </label>
-            <div className="border border-gray-300 dark:border-gray-600 overflow-hidden">
+            <div className="border border-gray-300 dark:border-gray-600 overflow-hidden rounded-lg">
               {quillError ? (
                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
                   <p className="text-sm text-red-600 dark:text-red-400 mb-2">
@@ -559,45 +467,57 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
                   </button>
                 </div>
               ) : (
-                <QuillErrorBoundary
-                  onError={() => {
-                    setQuillError(true)
-                    toast.error('Error loading editor. Content may be corrupted.')
-                  }}
-                >
-                  <ReactQuill
-                    key={blog?._id || 'new'}
-                    theme="snow"
-                    value={content}
-                    onChange={(value) => {
-                      // Don't sanitize onChange - preserve formatting and cursor position
-                      // ReactQuill already handles safe HTML output
-                      setContent(value)
-                      setValue('content', value)
-                      setQuillError(false)
+                <div className="relative">
+                  <QuillErrorBoundary
+                    onError={() => {
+                      setQuillError(true)
+                      toast.error('Error loading editor. Content may be corrupted.')
                     }}
-                    modules={{
-                      toolbar: [
-                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                        [{ 'font': CUSTOM_FONTS }],
-                        [{ 'size': [] }],
-                        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
-                        ['link', 'image', 'video'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'align': [] }],
-                        ['code-block'],
-                        ['clean']
-                      ]
-                    }}
-                    formats={quillFormats}
-                    placeholder="Start writing your blog post..."
-                    className="bg-white dark:bg-gray-800"
-                    preserveWhitespace={true}
-                  />
-                </QuillErrorBoundary>
+                  >
+                    <ReactQuill
+                      key={blog?._id || 'new'}
+                      theme="snow"
+                      value={content}
+                      onChange={(value) => {
+                        setContent(value)
+                        setValue('content', value)
+                        setQuillError(false)
+                      }}
+                      modules={quillModules}
+                      formats={quillFormats}
+                      className="min-h-[400px] text-base"
+                    />
+                  </QuillErrorBoundary>
+                </div>
               )}
             </div>
+            <style jsx global>{`
+              .ql-container {
+                font-size: 16px !important;
+                min-height: 400px !important;
+              }
+              .ql-editor {
+                min-height: 400px !important;
+                line-height: 1.6 !important;
+              }
+              .ql-toolbar {
+                border-top-left-radius: 0.5rem !important;
+                border-top-right-radius: 0.5rem !important;
+                background: #f8fafc !important;
+              }
+              .dark .ql-toolbar {
+                background: #1e293b !important;
+                border-color: #334155 !important;
+                color: #f1f5f9 !important;
+              }
+              .dark .ql-container {
+                border-color: #334155 !important;
+                color: #f1f5f9 !important;
+              }
+              .dark .ql-editor.ql-blank::before {
+                color: #94a3b8 !important;
+              }
+            `}</style>
             {(!content || content.trim() === '' || content === '<p><br></p>' || content === '<p></p>') && (
               <p className="mt-1 text-sm text-red-600">Content is required</p>
             )}
@@ -777,7 +697,7 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
                       className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg"
                     />
                     {errors.seoTitle && (
-                      <p className="mt-1 text-xs text-red-600">{errors.seoTitle.message}</p>
+                      <p className="mt-1 text-xs text-red-600">{errors.seoTitle.message?.toString()}</p>
                     )}
                   </div>
                   <div>
@@ -796,7 +716,7 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
                       className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm rounded-lg"
                     />
                     {errors.metaDescription && (
-                      <p className="mt-1 text-xs text-red-600">{errors.metaDescription.message}</p>
+                      <p className="mt-1 text-xs text-red-600">{errors.metaDescription.message?.toString()}</p>
                     )}
                   </div>
                 </div>
@@ -967,4 +887,3 @@ export default function BlogModal({ blog, onClose }: BlogModalProps) {
     </div>
   )
 }
-
